@@ -1,0 +1,74 @@
+##########################################################################
+#
+# IntrepidMUD configuration script
+# Copyright 2012-2019 by Mikael Segercrantz, Dan Griffiths and Dave Etheridge
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the license, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+##########################################################################
+#
+# This script works out the ROOT macro for the MUD and sets it up in
+# the header file 'include/root.h'. It is a hell of a lot more
+# compilicated than you think because the script should not modify the
+# file if the paths are the same.
+# (if it did, you'd be recompiling every single file every 'make')
+#
+##########################################################################
+
+#
+# Get the path to the mud. We assume that this is being run from the
+# Makefile in the src directory.
+#
+
+cd ..
+root_dir=`pwd`
+cd src
+
+#
+# Create the file and display some details in the makefile to assure
+# the user
+#
+
+echo "MUD path detected as     : $root_dir/"
+echo " "
+cp configure/root.template include/root.temp
+echo " " >> include/root.temp
+echo "#define ROOT \"$root_dir/\"" >> include/root.temp
+
+#
+# Does the 'include/root.h' file exist? If not then we need to just move
+# this to that file.
+#
+
+if [ ! -e "include/root.h" ]
+then
+  mv include/root.temp include/root.h
+  exit
+fi
+
+#
+# Is there any difference between this new one and the current one?
+#
+
+if [ -n "`cmp include/root.temp include/root.h`" ]
+then
+  mv include/root.temp include/root.h
+  exit
+fi
+
+#
+# There is no difference so we can just leave 'include/root.h' untouched
+#
+
+rm -f include/root.temp

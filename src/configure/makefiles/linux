@@ -1,0 +1,6 @@
+MF_DATE="19.03.2012"
+MF_OS="Linux (Fedora, Debian, and variants)"
+MF_AUTHOR="Mikael Segercrantz (Segtor)"
+MF_OS_CFLAGS="-DLINUX"
+MF_LIBS=""
+MF_OS_LDFLAGS=""

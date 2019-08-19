@@ -1,0 +1,199 @@
+###########################################################################
+#
+# IntrepidMUD configuration script
+# Copyright 2012-2019 by Mikael Segercrantz, Dan Griffiths and Dave Etheridge
+# 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the license, or (at your option)
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+# 
+# You should have received a copy of the GNU General Public License along 
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+###########################################################################
+
+cat > ../bin/boot <<*END*
+#!/bin/bash
+#
+###########################################################################
+#
+# IntrepidMUD bootup script
+# Copyright 2012-2019 by Mikael Segercrantz, Dan Griffiths and Dave Etheridge
+# 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the license, or (at your option)
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+# 
+# You should have received a copy of the GNU General Public License along 
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+###########################################################################
+
+# This is the location of the log file in case of an error
+
+logfile="files/logs/boot-script.log"
+
+# IF YOU START EDITING STUFF BELOW HERE, YOU BETTER KNOW WHAT YOU ARE DOING!
+# ==========================================================================
+
+cd `pwd`/..
+
+port=\`grep "^port" files/config/config.msg | cut -f2-\`
+
+if [ -z "\`ps x | grep "Archangel" | grep \$port\`" ]
+then
+	arch_up=0
+else
+	arch_up=1
+fi
+
+if [ -z "\`ps x | grep "Angel" | grep \$port\`" ]
+then
+	angel_up=0
+else
+	angel_up=1
+fi
+
+if [ -z "\`ps x | grep "MUD Server" | grep \$port\`" ]
+then
+	mud_up=0
+else
+	mud_up=1
+fi
+
+if [ "\$angel_up" = "1" -a "\$mud_up" = "1" ]
+then
+	exit
+fi
+
+if [ "\$arch_up" = "0" -a "\$angel_up" = "0" -a "\$mud_up" = "0" ]
+then
+	bin/archangel &
+	exit
+fi
+
+if [ "\$angel_up" = "1" ]
+then
+	ermsg="\`date +"%H:%M:%S - %d/%m/%Y"\` - Unable to boot MUD (angel is running)"
+else
+	ermsg="\`date +"%H:%M:%S - %d/%m/%Y"\` - Unable to boot MUD (MUD is already running)"
+fi
+
+echo "\$ermsg" >> \$logfile
+*END*
+chmod 700 ../bin/boot
+
+cat > ../bin/backup <<*END*
+############################################################################
+#
+# IntrepidMUD backup script
+# Copyright 2012-2019 by Mikael Segercrantz, Dan Griffiths and Dave Etheridge
+# 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the license, or (at your option)
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+# 
+# You should have received a copy of the GNU General Public License along 
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+############################################################################
+
+cd ..
+ROOT_DIR=\`pwd\`
+INTREPID_VERSION=\`egrep "\#define INTREPID_VERSION" src/include/mudconfig.h | cut -d"\"" -f2\`
+CURTIME=\`date +"%y%m%d%H%M%S"\`
+
+echo
+echo "Making distribution package..."
+
+echo "Creating dir /tmp/\$USER-intrepid/"
+mkdir /tmp/\$USER-intrepid
+
+echo "Creating dir /tmp/\$USER-intrepid/intrepid-\$INTREPID_VERSION/"
+mkdir /tmp/\$USER-intrepid/intrepid-\$INTREPID_VERSION
+
+echo "Copying everything over"
+cp -rf \$ROOT_DIR/* /tmp/\$USER-intrepid/intrepid-\$INTREPID_VERSION
+
+cd /tmp/\$USER-intrepid/intrepid-\$INTREPID_VERSION/src
+make scrub
+
+echo "Tarring it up"
+cd /tmp/\$USER-intrepid
+tar -cf intrepid-\$INTREPID_VERSION-\$CURTIME.tar intrepid-\$INTREPID_VERSION
+
+echo "Gziping the tarball"
+gzip -9 intrepid-\$INTREPID_VERSION-\$CURTIME.tar
+
+echo "Moving to your home dir"
+mv intrepid-\$INTREPID_VERSION-\$CURTIME.tar.gz ~
+cd \$ROOT_DIR/bin
+
+echo "Cleaning up after us"
+rm -rf /tmp/\$USER-intrepid/
+
+echo "Distribution package complete"
+echo
+*END*
+chmod 700 ../bin/backup
+
+cat > ../bin/backup-files <<*END*
+############################################################################
+#
+# IntrepidMUD backup script
+# Copyright 2012-2019 by Mikael Segercrantz, Dan Griffiths and Dave Etheridge
+# 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the license, or (at your option)
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+# 
+# You should have received a copy of the GNU General Public License along 
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+############################################################################
+
+cd ..
+CURTIME=\`date +"%y%m%d%H%M%S"\`
+
+echo
+echo "Packing up users and characters..."
+tar -cf users-\$CURTIME.tar files/users
+gzip -9 users-\$CURTIME.tar
+mv users-\$CURTIME.tar.gz ~
+
+echo "Packing up areas..."
+tar -cf areas-\$CURTIME.tar files/areas
+gzip -9 areas-\$CURTIME.tar
+mv areas-\$CURTIME.tar.gz ~
+
+echo
+echo "Backup of necessary files complete"
+echo
+*END*
+chmod 700 ../bin/backup-files
+
+bash configure/create_objects

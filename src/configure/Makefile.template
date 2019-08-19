@@ -1,0 +1,443 @@
+// IntrepidMUD Makefile Template
+// -----------------------------
+//
+// This is the Makefile template for IntrepidMUD. Should you wish to modify
+// your Makefile then you should edit THIS file and then run "make newos"
+// to install it.
+//
+// *MF_DATE*, *MF_OS*, *MF_AUTHOR*, *MF_OS_CFLAGS*, *MF_OTHER_CFLAGS* and
+// *MF_LIBS* will be replaced with the appropriate values depending upon
+// your operating system (which will be determined by "make newos").
+//
+// All lines starting with // will not be included in the final Makefile.
+//
+// =========================================================================
+//
+#
+# IntrepidMUD Makefile
+# Copyright 2012-2019 by Mikael Segercrantz, Dan Griffiths and Dave Etheridge
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the license, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+#   Makefile date : *MF_DATE*
+#   Makefile OS   : *MF_OS*
+#   Porting by    : *MF_AUTHOR*
+#
+# --------------------------------------------------------------------------
+#
+# To disable an option, comment it out with a # like so
+#
+#    OPTION = 1                 <---- This is enabled
+#    #OPTION = 1                <---- This is disabled
+#
+# Options:
+#
+# Defining PRECOMPILE will only precompile the sources, no compilation and
+# linking will be performed. This exists for debugging the compile-process.
+# The precompiled files will be stored in the same directories as the source
+# files, but with a .txt ending, instead of the normal .c one.
+
+#PRECOMPILE = 1
+
+# Definining DEBUGGING will include flags for the debugging of your MUD. It
+# increases the size of the executable slightly and is handy when you want
+# to debug a core file. If disk/memory space is at a premium you can always
+# turn it off.
+
+DEBUGGING = 1
+
+#
+# Defining USE_LIBG will link in an extra static C library IF AND ONLY IF
+# "DEBUGGING" is defined. This increases the size of the binary substantially
+# more and provides better debug support.
+#
+# This is NOT recommended for running a live MUD with. If you boot up your
+# code using this then you will be warned both on boot-up and in your VERSION
+# command.
+
+#USE_LIBG = 1
+
+#
+# Defining VERBOSE_MODE will cause the MUD to log a large amount of additional
+# information IF AND ONLY IF "DEBUGGING" is defined. This may be handy in
+# cases of problem code which is difficult to debug.
+
+#VERBOSE_MODE = 1
+
+#
+# Defining STRIP will run the UNIX "strip" command on the final executables
+# which removes any unnecessary symbols. This is run IF AND ONLY IF "DEBUGGING"
+# is undefined.
+#
+# If your live code is going to run without any debugging symbols then this is
+# recommended since it reduces the size of the binaries by at least 60k. It
+# should really only be disabled if your system doesn't support the "strip"
+# command.
+
+DO_STRIP = 1
+
+#
+# These are the locations of the binaries. You probably won't need or want to
+# change these.
+
+BIN_LOCATION		= ../bin
+OBJ_LOCATION		= ../obj
+MUD_OBJ			= $(OBJ_LOCATION)/mud
+ANGEL_OBJ		= $(OBJ_LOCATION)/angel
+ARCHANGEL_OBJ		= $(OBJ_LOCATION)/archangel
+DNS_OBJ			= $(OBJ_LOCATION)/dns
+IDENT_OBJ		= $(OBJ_LOCATION)/ident
+INTERMUD_OBJ		= $(OBJ_LOCATION)/intermud
+COMMON_OBJ		= $(OBJ_LOCATION)/common
+MUD_SERVER		= intrepid
+ANGEL			= angel
+ARCHANGEL		= archangel
+DNS_SERVER		= dns
+IDENT_SERVER		= ident
+INTERMUD_SERVER		= intermud
+COMMON_LIB		= common
+COMMON_LIB_FULL		= lib$(COMMON_LIB).a
+PERMS			= 700
+
+#
+# Specific flags according to your operating system
+
+OS_SPECIFIC_CFLAGS	= *MF_OS_CFLAGS*
+OS_SPECIFIC_LIBS	= *MF_LIBS*
+OS_SPECIFIC_LDFLAGS	= *MF_OS_LDFLAGS*
+
+#
+# The objects that need to be linked to make the executables. These are
+# automatically worked out by "make depend"
+
+include .Makefile_Objects
+
+#
+# Which programs to use for which purpose
+
+CC			= gcc
+AR			= ar
+RANLIB			= ranlib
+STRIP			= strip
+
+#
+# IF YOU START EDITING STUFF BELOW HERE, YOU BETTER KNOW WHAT YOU ARE DOING!
+# ==========================================================================
+
+LIBS		= $(OS_SPECIFIC_LIBS)
+CFLAGS		= $(OS_SPECIFIC_CFLAGS) -std=c99 -Wall -Wextra -pedantic
+LDFLAGS		= $(OS_SPECIFIC_LDFLAGS)
+
+ifdef DEBUGGING
+CFLAGS		+= -g3 -ggdb -Werror
+LDFLAGS		+= -g
+
+ifdef USE_LIBG
+LIBS		+= -Wl,-qmagic
+CFLAGS		+= -DDEBUGGING
+endif # USE_LIBG
+
+ifdef VERBOSE_MODE
+CFLAGS		+= -DDEBUG_VERBOSE
+endif # VERBOSE_MODE
+
+else # DEBUGGING
+
+CFLAGS		+= -O3
+endif # DEBUGGING
+
+CFLAGS		+= -Winline -Wshadow -Wpointer-arith -Wcast-qual
+CFLAGS		+= -Wcast-align -Wnested-externs -Wstrict-prototypes
+CFLAGS		+= -Wno-cast-align -Wno-pointer-arith
+CFLAGS		+= -DMUD_EXEC=\"$(MUD_SERVER)\" -DANGEL_EXEC=\"$(ANGEL)\"
+CFLAGS		+= -DIDENT_EXEC=\"$(IDENT_SERVER)\"
+CFLAGS		+= -DDNS_EXEC=\"$(DNS_SERVER)\"
+CFLAGS		+= -DINTERMUD_EXEC=\"$(INTERMUD_SERVER)\"
+CFLAGS		+= -DARCHANGEL_EXEC=\"$(ARCHANGEL)\"
+CFLAGS		+= *MF_OTHER_CFLAGS*
+CFLAGS		+= -DNEED_SCANDIR_DECL -DNEED_SIGNAL_DECLS
+CFLAGS		+= -DNEED_GETHOSTNAME_DECL -DNEED_CRYPT_DECL
+CFLAGS		+= -DNEED_GETLINE_DECL
+
+#
+# Defaults
+
+default:	install
+
+#
+# Options and actions
+
+all:		broadcast version $(COMMON_OBJ)/$(COMMON_LIB_FULL) $(MUD_OBJ)/$(MUD_SERVER) $(ANGEL_OBJ)/$(ANGEL) $(ARCHANGEL_OBJ)/$(ARCHANGEL) $(DNS_OBJ)/$(DNS_SERVER) $(IDENT_OBJ)/$(IDENT_SERVER) $(INTERMUD_OBJ)/$(INTERMUD_SERVER) finish
+reall:		broadcast version clean $(COMMON_OBJ)/$(COMMON_LIB_FULL) $(MUD_OBJ)/$(MUD_SERVER) $(ANGEL_OBJ)/$(ANGEL) $(ARCHANGEL_OBJ)/$(ARCHANGEL) $(DNS_OBJ)/$(DNS_SERVER) $(IDENT_OBJ)/$(IDENT_SERVER) $(INTERMUD_OBJ)/$(INTERMUD_SERVER) finish
+install:	broadcast version $(COMMON_OBJ)/$(COMMON_LIB_FULL) $(MUD_OBJ)/$(MUD_SERVER) $(ANGEL_OBJ)/$(ANGEL) $(ARCHANGEL_OBJ)/$(ARCHANGEL) $(DNS_OBJ)/$(DNS_SERVER) $(IDENT_OBJ)/$(IDENT_SERVER) $(INTERMUD_OBJ)/$(INTERMUD_SERVER) setup finish
+reinstall:	broadcast version clean $(COMMON_OBJ)/$(COMMON_LIB_FULL) $(MUD_OBJ)/$(MUD_SERVER) $(ANGEL_OBJ)/$(ANGEL) $(ARCHANGEL_OBJ)/$(ARCHANGEL) $(DNS_OBJ)/$(DNS_SERVER) $(IDENT_OBJ)/$(IDENT_SERVER) $(INTERMUD_OBJ)/$(INTERMUD_SERVER) setup finish
+
+COMMON_NAME	= "IntrepidMUD Common Library \"$(COMMON_LIB_FULL)\""
+MUD_NAME	= "IntrepidMUD MUD Server \"$(MUD_SERVER)\""
+ANGEL_NAME	= "IntrepidMUD Guardian Angel \"$(ANGEL)\""
+ARCHANGEL_NAME	= "IntrepidMUD Guardian Archangel \"$(ARCHANGEL)\""
+DNS_NAME	= "IntrepidMUD DNS Server \"$(DNS_SERVER)\""
+IDENT_NAME	= "IntrepidMUD Ident Server \"$(IDENT_SERVER)\""
+INTERMUD_NAME	= "IntrepidMUD InterMUD Server \"$(INTERMUD_SERVER)\""
+
+$(COMMON_OBJ)/$(COMMON_LIB_FULL):	broad_lib $(COMMON_OBJECTS) Makefile
+	@echo "Now archiving .... $(COMMON_NAME)"
+ifndef PRECOMPILE
+	@$(AR) rc $(COMMON_OBJ)/$(COMMON_LIB_FULL) $(COMMON_OBJECTS)
+	@$(RANLIB) $(COMMON_OBJ)/$(COMMON_LIB_FULL)
+endif # !PRECOMPILE
+
+$(MUD_OBJ)/$(MUD_SERVER):	broad_mud $(MUD_OBJECTS) Makefile
+	@echo "Now linking ...... $(MUD_NAME)"
+ifndef PRECOMPILE
+	@$(CC) $(LDFLAGS) -o $(MUD_OBJ)/$(MUD_SERVER) $(MUD_OBJECTS) $(LIBS) -L$(COMMON_OBJ) -l$(COMMON_LIB) -llua-5.1
+ifndef DEBUGGING
+ifdef DO_STRIP
+	@echo "Now stripping .... $(MUD_NAME)"
+	@(STRIP) $(MUD_OBJ)/$(MUD_SERVER)
+endif # DO_STRIP
+endif # !DEBUGGING
+endif # !PRECOMPILE
+
+$(ANGEL_OBJ)/$(ANGEL):	broad_angel $(ANGEL_OBJECTS) Makefile
+	@echo "Now linking ...... $(ANGEL_NAME)"
+ifndef PRECOMPILE
+	@$(CC) $(LDFLAGS) -o $(ANGEL_OBJ)/$(ANGEL) $(ANGEL_OBJECTS) -L$(COMMON_OBJ) -l$(COMMON_LIB)
+ifndef DEBUGGING
+ifdef DO_STRIP
+	@echo "Now stripping .... $(ANGEL_NAME)"
+	@(STRIP) $(ANGEL_OBJ)/$(ANGEL)
+endif # DO_STRIP
+endif # !DEBUGGING
+endif # !PRECOMPILE
+
+$(ARCHANGEL_OBJ)/$(ARCHANGEL):	broad_archangel $(ARCHANGEL_OBJECTS) Makefile
+	@echo "Now linking ...... $(ARCHANGEL_NAME)"
+ifndef PRECOMPILE
+	@$(CC) $(LDFLAGS) -o $(ARCHANGEL_OBJ)/$(ARCHANGEL) $(ARCHANGEL_OBJECTS) -L$(COMMON_OBJ) -l$(COMMON_LIB)
+ifndef DEBUGGING
+ifdef DO_STRIP
+	@echo "Now stripping .... $(ARCHANGEL_NAME)"
+	@(STRIP) $(ARCHANGEL_OBJ)/$(ARCHANGEL)
+endif # DO_STRIP
+endif # !DEBUGGING
+endif # !PRECOMPILE
+
+$(DNS_OBJ)/$(DNS_SERVER):	broad_dns $(DNS_OBJECTS) Makefile
+	@echo "Now linking ...... $(DNS_NAME)"
+ifndef PRECOMPILE
+	@$(CC) $(LDFLAGS) -o $(DNS_OBJ)/$(DNS_SERVER) $(DNS_OBJECTS) -L$(COMMON_OBJ) -l$(COMMON_LIB)
+ifndef DEBUGGING
+ifdef DO_STRIP
+	@echo "Now stripping .... $(DNS_NAME)"
+	@(STRIP) $(DNS_OBJ)/$(DNS_SERVER)
+endif # DO_STRIP
+endif # !DEBUGGING
+endif # !PRECOMPILE
+
+$(IDENT_OBJ)/$(IDENT_SERVER):	broad_ident $(IDENT_OBJECTS) Makefile
+	@echo "Now linking ...... $(IDENT_NAME)"
+ifndef PRECOMPILE
+	@$(CC) $(LDFLAGS) -o $(IDENT_OBJ)/$(IDENT_SERVER) $(IDENT_OBJECTS) -L$(COMMON_OBJ) -l$(COMMON_LIB)
+ifndef DEBUGGING
+ifdef DO_STRIP
+	@echo "Now stripping .... $(IDENT_NAME)"
+	@(STRIP) $(IDENT_OBJ)/$(IDENT_SERVER)
+endif # DO_STRIP
+endif # !DEBUGGING
+endif # !PRECOMPILE
+
+$(INTERMUD_OBJ)/$(INTERMUD_SERVER):	broad_intermud $(INTERMUD_OBJECTS) Makefile
+	@echo "Now linking ...... $(INTERMUD_NAME)"
+ifndef PRECOMPILE
+	@$(CC) $(LDFLAGS) -o $(INTERMUD_OBJ)/$(INTERMUD_SERVER) $(INTERMUD_OBJECTS) -L$(COMMON_OBJ) -l$(COMMON_LIB)
+ifndef DEBUGGING
+ifdef DO_STRIP
+	@echo "Now stripping .... $(INTERMUD_NAME)"
+	@$(STRIP) $(INTERMUD_OBJ)/$(INTERMUD_SERVER)
+endif # DO_STRIP
+endif # !DEBUGGING
+endif # !PRECOMPILE
+
+version:
+	@bash configure/create_version
+	@echo "#define COMPILE_TIME \"`date`\"" >> include/version.h
+	@echo "#define UNAME \"`uname`\"" >> include/version.h
+	@bash configure/get_dir
+
+broadcast:
+	@echo ""
+	@echo "Using OS specific flags : $(OS_SPECIFIC_CFLAGS)"
+	@echo "Using additional libs   : $(LIBS) $(LDFLAGS)"
+
+setup:	broad_setup
+ifndef PRECOMPILE
+	@echo "Now installing ... $(MUD_NAME)"
+	@mv $(MUD_OBJ)/$(MUD_SERVER) $(BIN_LOCATION)/$(MUD_SERVER)
+	@chmod $(PERMS) $(BIN_LOCATION)/$(MUD_SERVER)
+	@echo "Now installing ... $(ANGEL_NAME)"
+	@mv $(ANGEL_OBJ)/$(ANGEL) $(BIN_LOCATION)/$(ANGEL)
+	@chmod $(PERMS) $(BIN_LOCATION)/$(ANGEL)
+	@echo "Now installing ... $(ARCHANGEL_NAME)"
+	@mv $(ARCHANGEL_OBJ)/$(ARCHANGEL) $(BIN_LOCATION)/$(ARCHANGEL)
+	@chmod $(PERMS) $(BIN_LOCATION)/$(ARCHANGEL)
+	@echo "Now installing ... $(DNS_NAME)"
+	@mv $(DNS_OBJ)/$(DNS_SERVER) $(BIN_LOCATION)/$(DNS_SERVER)
+	@chmod $(PERMS) $(BIN_LOCATION)/$(DNS_SERVER)
+	@echo "Now installing ... $(IDENT_NAME)"
+	@mv $(IDENT_OBJ)/$(IDENT_SERVER) $(BIN_LOCATION)/$(IDENT_SERVER)
+	@chmod $(PERMS) $(BIN_LOCATION)/$(IDENT_SERVER)
+	@echo "Now installing ... $(INTERMUD_NAME)"
+	@mv $(INTERMUD_OBJ)/$(INTERMUD_SERVER) $(BIN_LOCATION)/$(INTERMUD_SERVER)
+	@chmod $(PERMS) $(BIN_LOCATION)/$(INTERMUD_SERVER)
+endif # !PRECOMPILE
+
+broad_lib:
+	@echo ""
+	@echo "Now creating ..... $(COMMON_NAME)"
+
+broad_mud:
+	@echo ""
+	@echo "Now creating ..... $(MUD_NAME)"
+
+broad_angel:
+	@echo ""
+	@echo "Now creating ..... $(ANGEL_NAME)"
+
+broad_archangel:
+	@echo ""
+	@echo "Now creating ..... $(ARCHANGEL_NAME)"
+
+broad_dns:
+	@echo ""
+	@echo "Now creating ..... $(DNS_NAME)"
+
+broad_ident:
+	@echo ""
+	@echo "Now creating ..... $(IDENT_NAME)"
+
+broad_intermud:
+	@echo ""
+	@echo "Now creating ..... $(INTERMUD_NAME)"
+
+broad_setup:
+	@echo ""
+	@echo "Now starting ..... Installation process"
+
+finish:
+	@echo ""
+	@echo "Compilation process finished"
+	@echo ""
+
+clean2:
+	@echo "Deleting compilation output and dependencies"
+	@-rm -f $(MUD_OBJ)/$(MUD_SERVER) $(ANGEL_OBJ)/$(ANGEL)
+	@-rm -f $(IDENT_OBJ)/$(IDENT_SERVER) $(ARCHANGEL_OBJ)/$(ARCHANGEL)
+	@-rm -f $(INTERMUD_OBJ)/$(INTERMUD_SERVER)
+	@-rm -f $(COMMON_OBJ)/$(COMMON_LIB_FULL)
+	@-rm -f $(MUD_OBJECTS) $(ANGEL_OBJECTS) $(ARCHANGEL_OBJECTS)
+	@-rm -f $(IDENT_OBJECTS) $(INTERMUD_OBJECTS) $(COMMON_OBJECTS)
+	@-rm -f $(DNS_OBJ)/$(DNS_SERVER) $(DNS_OBJECTS)
+	@-rm -f angel/*.txt archangel/*.txt common/*.txt
+	@-rm -f dns/*.txt ident/*.txt include/*.txt
+	@-rm -f intermud/*.txt mud/*.txt
+
+clean:	clean2
+	@echo ""
+
+purge2:	clean2
+	@echo "Deleting old logs, scripts, reports and emergency files"
+	@-rm -f ../files/reports/* ../files/logs/*.log ../files/logs/scripts/*
+	@-rm -f ../files/logs/scripts/.??* ../files/logs/emergency/*
+	@-rm -f ../files/logs/emergency/.??*
+
+purge: purge2
+	@echo ""
+
+scrub2:	purge2
+	@echo "Deleting notes and defrag"
+	@-rm -rf ../files/notes/* ../files/defrag/*
+
+scrub:	scrub2
+	@echo ""
+
+move2: scrub2
+	@echo "Deleting binaries and other built intermediaries"
+	@-rm -f $(BIN_LOCATION)/$(MUD_SERVER) $(BIN_LOCATION)/$(ANGEL)
+	@-rm -f $(BIN_LOCATION)/$(IDENT_SERVER) $(BIN_LOCATION)/$(ARCHANGEL)
+	@-rm -f $(BIN_LOCATION)/$(INTERMUD_SERVER) $(BIN_LOCATION)/$(DNS_SERVER)
+	@-rm -f $(BIN_LOCATION)/backup-files
+	@-rm -f $(BIN_LOCATION)/backup $(BIN_LOCATION)/boot ../files/pids/*
+	@-rm -f .Makefile_Depends .Makefile_Objects include/version.h
+	@bash configure/recreate_orig_makefile
+
+move: move2
+	@echo ""
+
+dist2: move2
+	@echo "Deleting user and character files"
+	@-rm -rf ../files/users/*
+
+dist: dist2
+	@echo ""
+
+full2: dist2
+	@echo "Deleting area files"
+	@-rm -rf ../files/areas/*
+
+full: full2
+	@echo ""
+
+$(OBJ_LOCATION)/%.o:	include/mudconfig.h Makefile %.c
+ifdef PRECOMPILE
+	@printf "Now precompiling . %-15s : %6s lines \n" "`echo $*.c | cut -d"/" -f2`" "`wc -l $*.c | cut -d" " -f1`"
+	@$(CC) $(CFLAGS) $(DEFS) -E $*.c -o $*.txt
+else # PRECOMPILE
+	@printf "Now compiling .... %-15s : %6s lines \n" "`echo $*.c | cut -d"/" -f2`" "`wc -l $*.c | cut -d" " -f1`"
+	@$(CC) $(CFLAGS) $(DEFS) -c $*.c -o $(OBJ_LOCATION)/$*.o
+endif # PRECOMPILE
+
+depend:
+	@bash configure/create_objects
+
+newos:
+	@bash configure/configure
+
+help:
+	@echo "IntrepidMUD build system help"
+	@echo ""
+	@echo "The IntrepidMUD Makefile contains the following make targets to be used:"
+	@echo ""
+	@echo "      all - Builds every file if needed."
+	@echo "    reall - Builds every file, even if not needed."
+	@echo "  install - Builds every file if needed and installs the resulting"
+	@echo "            executables into the bin/ directory."
+	@echo "reinstall - A combination of make reall and make install."
+	@echo "   depend - Works out the dependencies needed by the source files."
+	@echo "    newos - Works out everything related to compiling on a new target/version"
+	@echo "            of the OS, including the dependencies."
+	@echo "    clean - Deletes the object files."
+	@echo "    purge - As make clean, adding old logs, scripts, reports and emergency"
+	@echo "            files."
+	@echo "    scrub - As make purge, adding notes and defrags."
+	@echo "     move - As make scrub, adding any binaries and other built intermediaries."
+	@echo "     dist - As make move, adding any user and character files."
+	@echo "     full - As make dist, adding any areas."
+	@echo "     help - Shows this help file."
+	@echo ""
+
+#
+# Dependencies (automatically worked out by "make depend")
+
+include .Makefile_Depends

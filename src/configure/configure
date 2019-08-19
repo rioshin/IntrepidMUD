@@ -1,0 +1,203 @@
+###########################################################################
+#
+# IntrepidMUD configuration script
+# Copyright 2012-2019 by Mikael Segercrantz, Dan Griffiths and Dave Etheridge
+# 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the license, or (at your option)
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+# 
+# You should have received a copy of the GNU General Public License along 
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+###########################################################################
+
+INTREPID_VERSION=`egrep "\#define INTREPID_VERSION" include/mudconfig.h | cut -d"\"" -f2`
+
+clear
+
+cat <<*END*
+
+ IntrepidMUD v$INTREPID_VERSION configuration
+---------------------------------------------------------------------------
+
+ MAKEFILE CONFIGURATION
+
+This configuration script will work out what type of UNIX you are running
+and create the appropriate Makefile for you.
+
+*END*
+
+uname_system=`uname -s 2>/dev/null` || uname_system=unknown
+uname_machine=`uname -m 2>/dev/null` || uname_machine=unknown
+uname_release=`uname -r 2>/dev/null` || uname_release=unknown
+
+sleep 2
+
+echo "    Host name              : `hostname`"
+echo "    Host system            : $uname_system"
+echo "    Host machine           : $uname_machine"
+echo "    Host release           : $uname_release"
+
+uname_system=`echo $uname_system | sed "s#/#-#g"`
+makefile="unknown"
+
+case $uname_system in
+	SunOS )
+		echo -n "    Specific OS            : "
+		release_major=`echo $uname_release < cut -f 1 -d .`
+		case $release_major in
+			5 )
+				release_minor=`echo $uname_release | cut -f 2 -d .`
+				echo "Solaris 2.$release_minor";
+				makefile="Solaris"
+				;;
+			* )
+				echo "SunOS $uname_release"
+				makefile="SunOS"
+				;;
+		esac
+		;;
+
+	* )
+		uname_system=`ls configure/makefiles | grep -i "^$uname_system"`
+		if [ -f "configure/makefiles/$uname_system" ]
+		then
+			makefile="$uname_system"
+		else
+			echo -e "\n    No specific Makefile for that system found"
+			echo "    Please choose from one of the following:\n"
+
+			ls -C configure/makefiles | sed "s/^/    /g"
+
+			echo -e "\n    option> \c"
+
+			read makefile
+			echo
+		fi
+		;;
+
+esac
+
+
+echo -n "    Checking               : headers..."
+flags="-DNDEBUG"
+egrep -h "#include <.*\.h>" mud/*.c | sed "s/ *#/#/g" | sort | uniq > temp.c
+gcc -E temp.c 1>temp.txt 2>/dev/null
+if [ -n "`egrep -i "extern * int * scandir * \(__const" temp.txt`" ]
+then
+	flags="$flags -DNEED_CONST_DIRENT"
+fi
+if [ -n "`egrep -i "extern * int * scandir * \(const" temp.txt`" ]
+then
+	flags="$flags -DNEED_CONST_DIRENT"
+fi
+if [ -n "`egrep -i "typedef * unsigned * int * socklen_t;" temp.txt`" ]
+then
+	flags="$flags -DHAVE_SOCKLEN_T"
+fi
+if [ -n "`egrep -i "extern * int * sigemptyset *" temp.txt`" ]
+then
+	flags="$flags -DHAVE_SIGEMPTYSET"
+fi
+if [ -z "`egrep -i "extern * int * bind *" temp.txt`" ]
+then
+	flags="$flags -DNEED_BIND_DECL"
+fi
+if [ -z "`egrep -i "extern * int * listen *" temp.txt`" ]
+then
+	flags="$flags -DNEED_LISTEN_DECL"
+fi
+if [ -z "`egrep -i "extern * int * getitimer *" temp.txt`" ]
+then
+	flags="$flags -DNEED_GETITIMER_DECL"
+fi
+if [ -z "`egrep -i "extern * int * getrlimit *" temp.txt`" ]
+then
+	flags="$flags -DNEED_GETRLIMIT_DECL"
+fi
+if [ -z "`egrep -i "extern * char * \*crypt *" temp.txt`" ]
+then
+	flags="$flags -DNEED_CRYPT_DECL"
+fi
+if [ -z "`egrep -i "extern * ssize_t * getline *" temp.txt`" ]
+then
+	flags="$flags -DNEED_GETLINE_DECL"
+fi
+if [ -z "`egrep -i "extern * int * scandir *" temp.txt`" ]
+then
+	flags="$flags -DNEED_SCANDIR_DECL"
+fi
+rm -f temp.txt temp.c
+
+echo -n " crypt..."
+libs=""
+cat > temp.c << *END*
+#include <time.h>
+void main(void)
+{
+	timelocal(0);
+	crypt(0, 0);
+}
+*END*
+gcc temp.c -o temp.exe 2>temp.output
+if [ -n "`grep "crypt" temp.output`" ]
+then
+	libs="-lcrypt"
+fi
+if [ -n "`grep "timelocal" temp.output`" ]
+then
+	flags="$flags -DUSE_MKTIME"
+fi
+rm -f temp.c temp.exe temp.output
+echo " ok"
+
+makefile=`ls configure/makefiles | grep -i "^$makefile\$"`
+
+if [ ! -f configure/makefiles/$makefile ]
+then
+	echo "    Error: Unable to find makefile for that OS. Aborting."
+	echo
+	exit
+fi
+
+echo "    Using details from     : makefiles/$makefile"
+
+. configure/makefiles/$makefile
+
+MF_OTHER_CFLAGS="$flags"
+if [ -n "$libs" ]
+then
+	MF_LIBS="$MF_LIBS $libs"
+fi
+
+echo "    Makefile description   : `echo $MF_OS`"
+echo "    Makefile o/s defines   : $MF_OS_CFLAGS"
+echo "    Makefile o/s libraries : $MF_LIBS"
+
+cat configure/Makefile.template | grep -v "^//" | \
+                                  sed -e "s/\*MF_DATE\*/$MF_DATE/g" \
+                                      -e "s/\*MF_OS\*/$MF_OS/g" \
+				      -e "s/\*MF_AUTHOR\*/$MF_AUTHOR/g" \
+				      -e "s/\*MF_OS_CFLAGS\*/$MF_OS_CFLAGS/g" \
+				      -e "s/\*MF_OTHER_CFLAGS\*/$MF_OTHER_CFLAGS/g" \
+				      -e "s/\*MF_LIBS\*/$MF_LIBS/g" \
+				      -e "s/\*MF_OS_LDFLAGS\*/$MF_OS_LDFLAGS/g" \
+				      > Makefile
+
+touch .Makefile_Depends
+touch .Makefile_Objects
+
+echo
+echo "    Makefile installed successfully"
+echo
+echo -n "    Press RETURN or ENTER to continue... "
+read response
+
+bash configure/create_scripts
