@@ -1,0 +1,71 @@
+#
+# QuickSearch version 3.0 (05 Nov 2011)
+# Written by Richard Lawrence (aka Silver)
+# Edited and Updated by Griff
+# Modified for IntrepidMUD by Mikael Segercrantz (aka Segtor)
+#
+# A simple batch file to quickly find some text in IntrepidMUD
+#
+
+if [ -z "$1" ]
+then
+  echo
+  echo "QuickSearch version 3.0 (05 Nov 2011)"
+  echo "Written by Richard Lawrence (aka Silver)"
+  echo "Edited and Updated by Dan Griffiths (aka Griff)"
+  echo "Modified for IntrepidMUD by Mikael Segercrantz (aka Segtor)"
+  echo
+  echo "Usage: qs <string>"
+  echo "Searches all IntrepidMUD code for the case insensitive occurances of <string>"
+  echo
+  exit
+fi
+
+ls angel/*.c > .files
+ls archangel/*.c >> .files
+ls common/*.c >> .files
+ls dns/*.c >> .files
+ls ident/*.c >> .files
+ls include/*.h >> .files
+ls intermud/*.c >> .files
+ls mud/*.c >> .files
+ls configure/* >> .files
+ls configure/makefiles/* >> .files
+ls Makefile >> .files
+
+rm -f .tmp
+echo "Searching all code files, the configuration files and the Makefile for '$1'..."
+flagged=""
+
+for id in `cat .files`
+do
+  fname=""
+  if [ -e $id ]
+  then
+    fname="$id"
+  fi
+
+  result=""
+  if [ -n "$fname" ]
+  then
+    result=`more $fname | grep -v -i "usage:" | grep -n -i "$1"`
+  fi
+
+  if [ -n "$result" ]
+  then
+    echo " " >>.tmp
+    echo "***** $fname *****" >>.tmp
+    echo " " >>.tmp
+    echo "$result" >>.tmp
+    flagged="yes"
+  fi
+done
+
+if [ -z "$flagged" ]
+then
+  echo "Sorry, no matches found."
+else
+  less .tmp
+fi
+rm -f .tmp
+rm -f .files

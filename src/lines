@@ -1,0 +1,164 @@
+# set our variables to 0 just in case, total_lines will need this later on
+angel_lines=0
+archangel_lines=0
+common_lines=0
+dns_lines=0
+ident_lines=0
+intermud_lines=0
+mud_lines=0
+include_lines=0
+total_lines=0
+makefile_lines=0
+total_conf_lines=0
+
+# find the combined length, needs the dir to have at least two matched files
+angel_lines=`wc -l angel/*.c | grep total | cut -b1-6 | xargs echo`
+archangel_lines=`wc -l archangel/*.c | grep total | cut -b1-6 | xargs echo`
+common_lines=`wc -l common/*.c | grep total | cut -b1-6 | xargs echo`
+dns_lines=`wc -l dns/*.c | grep total | cut -b1-6 | xargs echo`
+ident_lines=`wc -l ident/*.c | grep total | cut -b1-6 | xargs echo`
+intermud_lines=`wc -l intermud/*.c | grep total | cut -b1-6 | xargs echo`
+mud_lines=`wc -l mud/*.c | grep total | cut -b1-6 | xargs echo`
+include_lines=`wc -l include/*.h | grep total | cut -b1-6 | xargs echo`
+makefile_lines=`wc -l configure/[cgMr]* configure/makefiles/* [lqM]* make_pretty | grep total | cut -b1-6 | xargs echo`
+
+# if we didn't get any, match a single file and if that didn't give us
+# any, reset it to 0 just in case, case angel/main.c
+if [ "$angel_lines" == "" ]
+then
+	angel_lines=`wc -l angel/main.c | cut -d" " -f1 -s | xargs echo`
+	if [ "$angel_lines" == "" ]
+	then
+		angel_lines=0
+	fi
+fi
+
+# if we didn't get any, match a single file and if that didn't give us
+# any, reset it to 0 just in case, case archangel/main.c
+if [ "$archangel_lines" == "" ]
+then
+	archangel_lines=`wc -l archangel/main.c | cut -d" " -f1 -s | xargs echo`
+	if [ "$archangel_lines" == "" ]
+	then
+		archangel_lines=0
+	fi
+fi
+
+# if we didn't get any, match a single file and if that didn't give us
+# any, reset it to 0 just in case, case common/main.c
+if [ "$common_lines" == "" ]
+then
+	common_lines=`wc -l common/main.c | cut -d" " -f1 -s | xargs echo`
+	if [ "$common_lines" == "" ]
+	then
+		common_lines=0
+	fi
+fi
+
+# if we didn't get any, match a single file and if that didn't give us
+# any, reset it to 0 just in case, case dns/main.c
+if [ "$dns_lines" == "" ]
+then
+	dns_lines=`wc -l dns/main.c | cut -d" " -f1 -s | xargs echo`
+	if [ "$dns_lines" == "" ]
+	then
+		dns_lines=0
+	fi
+fi
+
+# if we didn't get any, match a single file and if that didn't give us
+# any, reset it to 0 just in case, case ident/main.c
+if [ "$ident_lines" == "" ]
+then
+	ident_lines=`wc -l ident/main.c | cut -d" " -f1 -s | xargs echo`
+	if [ "$ident_lines" == "" ]
+	then
+		ident_lines=0
+	fi
+fi
+
+# if we didn't get any, match a single file and if that didn't give us
+# any, reset it to 0 just in case, case intermud/main.c
+if [ "$intermud_lines" == "" ]
+then
+	intermud_lines=`wc -l intermud/main.c | cut -d" " -f1 -s | xargs echo`
+	if [ "$intermud_lines" == "" ]
+	then
+		intermud_lines=0
+	fi
+fi
+
+# if we didn't get any, match a single file and if that didn't give us
+# any, reset it to 0 just in case, case mud/main.c
+if [ "$mud_lines" == "" ]
+then
+	mud_lines=`wc -l mud/main.c | cut -d" " -f1 -s | xargs echo`
+	if [ "$mud_lines" == "" ]
+	then
+		mud_lines=0
+	fi
+fi
+
+# if we didn't get any, match a single file and if that didn't give us
+# any, reset it to 0 just in case, case include/mudconfig.h
+if [ "$include_lines" == "" ]
+then
+	include_lines=`wc -l include/mudconfig.h | cut -d" " -f1 -s | xargs echo`
+	if [ "$include_lines" == "" ]
+	then
+		include_lines=0
+	fi
+fi
+
+#if we didn't get any, reset it to 0 just in case, case Makefile
+if [ "$makefile_lines" == "" ]
+then
+	makefile_lines=`wc -l Makefile | cut -d" " -f1 -s | xargs echo`
+	if [ "$makefile_lines" == ""]
+	then
+		makefile_lines=0
+	fi
+fi
+
+# count the total number of lines in all the source files of all the
+# source subdirs
+total_conf_lines=$(($total_conf_lines+$angel_lines))
+total_conf_lines=$(($total_conf_lines+$archangel_lines))
+total_conf_lines=$(($total_conf_lines+$common_lines))
+total_conf_lines=$(($total_conf_lines+$dns_lines))
+total_conf_lines=$(($total_conf_lines+$ident_lines))
+total_conf_lines=$(($total_conf_lines+$intermud_lines))
+total_conf_lines=$(($total_conf_lines+$mud_lines))
+total_conf_lines=$(($total_conf_lines+$include_lines))
+total_lines=$(($total_conf_lines+$makefile_lines))
+
+# and handle showing it to us
+wc -l angel/*.c | grep -v -i "total"
+echo " $angel_lines Total Guardian Angel Lines"
+echo " "
+wc -l archangel/*.c | grep -v -i "total"
+echo " $archangel_lines Total Guardian Archangel Lines"
+echo " "
+wc -l common/*.c | grep -v -i "total"
+echo " $common_lines Total Common Library Lines"
+echo " "
+wc -l dns/*.c | grep -v -i "total"
+echo " $dns_lines Total DNS Server Lines"
+echo " "
+wc -l ident/*.c | grep -v -i "total"
+echo " $ident_lines Total Ident Server Lines"
+echo " "
+wc -l intermud/*.c | grep -v -i "total"
+echo " $intermud_lines Total InterMUD Server Lines"
+echo " "
+wc -l mud/*.c | grep -v -i "total"
+echo " $mud_lines Total MUD Server Lines"
+echo " "
+wc -l include/*.h | grep -v -i "total"
+echo " $include_lines Total Include Lines"
+echo " "
+wc -l configure/[cgMr]* configure/makefiles/* [lqM]* make_pretty | grep -v -i "total"
+echo " $makefile_lines Total Configuration Stuff, Scripts and Makefiles Lines"
+echo " "
+echo " $total_lines Cumulative Total Lines"
+echo " $total_conf_lines Cumulative Total Lines without Configuration Stuff, Scripts and Makefiles"
