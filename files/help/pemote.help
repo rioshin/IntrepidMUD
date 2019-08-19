@@ -1,0 +1,13 @@
+PEMOTE <message>  - just like EMOTE, except it puts 's at the end of your
+                    name.
+
+NOTE: PEMOTE is also alised to :: :; ;: and ;;
+
+Examples:
+        (If your name is Segtor)
+
+        pemote dog is cool       Segtor's dog is cool
+     
+        (If your name ends in Calis)
+
+        pemote cat rules         Calis' cat rules

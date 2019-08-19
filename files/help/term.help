@@ -1,0 +1,4 @@
+TERM [termtype/none] - set if you want private messages to you to be
+                       hi-lighted or not.
+
+NOTE:   If you don't know your termtype, vt100 is USUALLY a good guess.

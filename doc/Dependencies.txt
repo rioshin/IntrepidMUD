@@ -1,0 +1,3 @@
+In order to succesfully compile and link IntrepidMUD, you'll need to have
+version 5.1 of lua installed on the system you compile on (as well as run
+on!).

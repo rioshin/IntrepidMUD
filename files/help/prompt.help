@@ -1,0 +1,3 @@
+PROMPT <prompt>    - Set your prompt
+PROMPT reset       - Resets your prompt to the default
+PROMPT             - Clears your prompt

@@ -1,0 +1,5 @@
+LINES reset      - Resets your terminal line count to the MUD default of 18
+LINES <number>   - Sets your terminal line count number
+LINES            - Lets you check what your terminal line count is
+
+NOTE:   The line count must be between 5 and 40, inclusive

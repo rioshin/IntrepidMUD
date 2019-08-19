@@ -1,0 +1,20 @@
+  Here is where you can test to see if your telnet client supports color
+             and if so, how you can use color within the MUD.
+
+ ^Rbright red^N    ... ^^R  ^rdark red^N    ... ^^r  ^Hwhite^N            ... ^^H
+ ^Yyellow^N        ... ^^Y  ^ybrown^N       ... ^^y  ^Iinverse^N          ... ^^I
+ ^Gbright green^N  ... ^^G  ^gdark green^N  ... ^^g  ^Kblink text^N       ... ^^K
+ ^Bbright blue^N   ... ^^B  ^bdark blue^N   ... ^^b  ^Uunderline^N        ... ^^U
+ ^Cbright cyan^N   ... ^^C  ^cdark cyan^N   ... ^^c  ^Sitalic^N           ... ^^S
+ ^Pbright purple^N ... ^^P  ^pdark purple^N ... ^^p  ^Xrandom light col^N ... ^^X
+ ^Alight gray^N    ... ^^A  ^adark gray^N   ... ^^a  ^xrandom dark col^N  ... ^^x
+                       ^Ncolors off^N  ... ^^N  ^qrandom color^N     ... ^^Q
+
+Note that ^^ means you LITERALLY type <shift><6> and ^K^RNOT <control>^N
+
+In case you want to send an alarm bell in what you say, use ^^W.
+
+If you see a mess above, type "term none". If you see no colors and wish to
+see if you can see colors, type "term" and select the terminal type that
+matches yours. Note that for most users of the MUD, we automatically detect
+the correct terminal to use.

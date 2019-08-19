@@ -1,0 +1,12 @@
+EMOTE <action>  - this is the most "general" type of communication. It
+                  simply puts whatever you say after your name with no
+                  "extras" added on and sends it to everyone in the same
+                  room as you.
+
+NOTE:   * EMOTE is aliased to : and ;
+
+Examples:
+        (If your name is Segtor)
+
+        emote giggles             Segtor giggles
+        emote 'll be right back   Segtor'll be right back

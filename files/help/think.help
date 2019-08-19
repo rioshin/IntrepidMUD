@@ -1,0 +1,9 @@
+THINK <thought>  - puts your thoughts into a "thought bubble" and tells it
+                   to everyone in the same room as you.
+
+NOTE:   THINK is aliased to ~
+
+Examples:
+        (If your name is Segtor)
+
+        think hmmm                Segtor thinks . o O ( hmmm )

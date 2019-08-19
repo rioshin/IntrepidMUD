@@ -1,0 +1,5 @@
+COMMANDS <type>  - Lists all commands available to you of that "type"
+
+If you don't include a type then you will be shown all available options.
+
+Note: This is also aliased to "c".

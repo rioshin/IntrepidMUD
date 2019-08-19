@@ -1,0 +1,14 @@
+SAY <something>  - Tells everyone in the same room as you something.
+
+If <something> ends with a ! then it becomes an "exclaim"
+If it ends in ? then it becomes an "ask"
+If it ends in anything else, it's a "say"
+
+NOTE:   SAY is also aliased to " ' `  
+
+Examples:
+        (If your name is Segtor)
+
+        say hi people!            Segtor exclaims 'hi people!'
+        say where are you from?   Segtor asks 'where are you from?'
+        say that's cool           Segtor says 'that's cool'
