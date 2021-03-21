@@ -2,7 +2,7 @@
  * IntrepidMUD
  * Header file
  * ---------------------------------------------------------------------------
- * Copyright 2012-2019 by Mikael Segercrantz, Dan Griffiths and Dave Etheridge
+ * Copyright 2012-2021 by Mikael Segercrantz, Dan Griffiths and Dave Etheridge
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free

@@ -9,13 +9,13 @@
 // *MF_LIBS* will be replaced with the appropriate values depending upon
 // your operating system (which will be determined by "make newos").
 //
-// All lines starting with // will not be included in the final Makefile.
+// Any lines starting with // will not be included in the final Makefile.
 //
 // =========================================================================
 //
 #
 # IntrepidMUD Makefile
-# Copyright 2012-2019 by Mikael Segercrantz, Dan Griffiths and Dave Etheridge
+# Copyright 2012-2021 by Mikael Segercrantz, Dan Griffiths and Dave Etheridge
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free

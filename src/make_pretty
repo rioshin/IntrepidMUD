@@ -16,6 +16,8 @@
 # This file is copied from Playground Plus and modified to fit IntrepidMUD
 #
 
+INDENT_OPTIONS=""
+
 if [ ! -e .indent.pro -a ! -e $HOME/.indent.pro ] ; then
   INDENT_OPTIONS="-linux -bbo -bl -bli0 -blf -bls -ci2 -cs -hnl -i2 -l75 -lp -nlps -ncdw -nce -ncs -npcs -nprs -npsl -nsob -nss -nut -saf -sai -saw -ts8"
 fi
