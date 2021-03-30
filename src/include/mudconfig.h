@@ -24,7 +24,7 @@
 #include "root.h"
 #include "types.h"
 
-#define INTREPID_VERSION "0.128"
+#define INTREPID_VERSION "0.129"
 
 #define MUD_SOCKET_PATH "files/pids/mud_alive_socket"
 #define ANGEL_SOCKET_PATH "files/pids/angel_alive_socket"
